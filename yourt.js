@@ -1,48 +1,50 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const list = document.getElementById('draggable-list');
-    const submitButton = document.getElementById('submit-button');
+    let draggedItem = null;
 
-    // Sample data, replace with actual data
-    const listItems = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
+    // Function to handle the drag start event
+    function handleDragStart(e) {
+        draggedItem = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+    }
 
-    // Populate the list
-    listItems.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        list.appendChild(li);
+    // Function to handle the drag over event
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    // Function to handle the drop event
+    function handleDrop(e) {
+        e.stopPropagation();
+        if (draggedItem !== this) {
+            draggedItem.innerHTML = this.innerHTML;
+            this.innerHTML = e.dataTransfer.getData('text/html');
+        }
+        return false;
+    }
+
+    // Function to handle the drag end event
+    function handleDragEnd(e) {
+        items.forEach((item) => {
+            item.classList.remove('over');
+        });
+    }
+
+    let items = list.querySelectorAll('li');
+    items.forEach((item) => {
+        item.setAttribute('draggable', 'true');
+        item.addEventListener('dragstart', handleDragStart, false);
+        item.addEventListener('dragover', handleDragOver, false);
+        item.addEventListener('drop', handleDrop, false);
+        item.addEventListener('dragend', handleDragEnd, false);
     });
 
-    let draggingEle;
-    let placeholder;
-    let isDraggingStarted = false;
-
-    // Swap list items
-    const swap = function (nodeA, nodeB) {
-        const parentA = nodeA.parentNode;
-        const siblingA = nodeA.nextSibling === nodeB ? nodeA : nodeA.nextSibling;
-
-        // Move `nodeA` to before the `nodeB`
-        nodeB.parentNode.insertBefore(nodeA, nodeB);
-
-        // Move `nodeB` to before the sibling of `nodeA`
-        parentA.insertBefore(nodeB, siblingA);
-    };
-
-    // Check if `nodeA` is on top of `nodeB`
-    const isAbove = function (nodeA, nodeB) {
-        const rectA = nodeA.getBoundingClientRect();
-        const rectB = nodeB.getBoundingClientRect();
-
-        return rectA.top + rectA.height / 2 < rectB.top + rectB.height / 2;
-    };
-
-    const mouseDownHandler = function (e) {
-        draggingEle = e.target;
-
-        // Calculate the mouse position
-        const rect = draggingEle.getBoundingClientRect();
-        const x = e.pageX - rect.left;
-        const y = e.pageY - rect.top;
-
-        // Attach the listeners to `document`
-        document.addEventListener('mousemove
+    // Submit button event listener
+    document.getElementById('submit-button').addEventListener('click', () => {
+        alert('Thanks for making your list');
+        // You can replace the alert with any other action you'd like to perform
+    });
+});
