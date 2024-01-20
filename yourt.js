@@ -4,50 +4,47 @@ document.addEventListener('DOMContentLoaded', function () {
     const thankYouMessage = document.getElementById('thankYouMessage');
     let draggedItem = null;
 
-    // Allow dragging from original list
-    originalList.addEventListener('dragstart', function (e) {
-        if (e.target.className.includes('rankItem')) {
-            draggedItem = e.target;
-        }
-    });
+    // Function to handle the start of dragging
+    function handleDragStart(e) {
+        draggedItem = e.target.closest('.rankItem');
+    }
 
-    // Handle drag over ranking container
-    rankingContainer.addEventListener('dragover', function (e) {
+    // Function to handle dropping
+    function handleDrop(e, container) {
         e.preventDefault();
-    });
+        if (draggedItem && e.target.closest('.list')) {
+            container.appendChild(draggedItem);
+        }
+    }
 
-    // Drop item into ranking container
-    rankingContainer.addEventListener('drop', function (e) {
+    // Function to handle touch moves
+    function handleTouchMove(e) {
         e.preventDefault();
-        if (draggedItem) {
-            rankingContainer.appendChild(draggedItem);
-        }
-    });
+        var touchLocation = e.targetTouches[0];
+        draggedItem.style.position = 'absolute';
+        draggedItem.style.left = touchLocation.pageX + 'px';
+        draggedItem.style.top = touchLocation.pageY + 'px';
+    }
 
-    // Allow reordering within ranking container
-    rankingContainer.addEventListener('dragstart', function (e) {
-        if (e.target.className.includes('rankItem')) {
-            draggedItem = e.target;
-        }
-    });
+    // Function to handle touch end
+    function handleTouchEnd(e) {
+        draggedItem.style.position = 'static';
+        handleDrop(e, rankingContainer);
+    }
 
-    rankingContainer.addEventListener('drop', function (e) {
-        e.preventDefault();
-        if (e.target.className.includes('rankItem')) {
-            const children = Array.from(rankingContainer.children);
-            const dropIndex = children.indexOf(e.target);
-            const dragIndex = children.indexOf(draggedItem);
+    // Desktop Events
+    originalList.addEventListener('dragstart', handleDragStart);
+    rankingContainer.addEventListener('dragover', e => e.preventDefault());
+    rankingContainer.addEventListener('drop', e => handleDrop(e, rankingContainer));
 
-            if (dropIndex > dragIndex) {
-                rankingContainer.insertBefore(draggedItem, e.target.nextSibling);
-            } else {
-                rankingContainer.insertBefore(draggedItem, e.target);
-            }
-        }
-    });
-
-    document.getElementById('submitRanking').addEventListener('click', function () {
-        thankYouMessage.style.display = 'block';
-    });
+    // Mobile Events
+    originalList.addEventListener('touchstart', handleDragStart);
+    originalList.addEventListener('touchmove', handleTouchMove);
+    originalList.addEventListener('touchend', handleTouchEnd);
 });
+
+document.getElementById('submitRanking').addEventListener('click', function () {
+    thankYouMessage.style.display = 'block';
+});
+
 
